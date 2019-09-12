@@ -8,73 +8,72 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.io.Writer
 
 /**
  * Created by kombo on 2019-09-12.
  */
-class CSVWriter(private val context: Context) {
+class CSVWriter(private val context: Context, private var separator: String?) {
 
-    private var writer: FileWriter? = null
+    private var fileWriter: FileWriter? = null
 
     fun createCSV() {
         val fileRoot = ContextCompat.getExternalFilesDirs(context, Environment.DIRECTORY_DOWNLOADS)
         val file = File(fileRoot[1].absolutePath, "songs.csv")
 
         try {
-            writer = FileWriter(file)
-            addHeader()
-            addRows(SAMPLE_DATA)
-        } catch (io: IOException){
+            fileWriter = FileWriter(file)
+            fileWriter?.let {
+                addLine(it, listOf("Title", "Artist", "Release Year", "Rating", "Is Remix"))
+
+                for (song in SAMPLE_DATA) {
+                    addLine(
+                        it,
+                        listOf(
+                            song.title,
+                            song.artist,
+                            song.releaseYear.toString(),
+                            song.rating.toString(),
+                            song.isRemix.toString()
+                        )
+                    )
+                }
+            }
+            fileWriter?.flush()
+            fileWriter?.close()
+        } catch (io: IOException) {
             Timber.e(io)
-        } finally {
-            writer?.flush()
-            writer?.close()
         }
     }
 
     @Throws(IOException::class)
-    private fun addHeader() {
-        val line = buildString {
-            append("Title")
-            append(DEFAULT_SEPARATOR)
-            append("Artist")
-            append(DEFAULT_SEPARATOR)
-            append("Release Year")
-            append(DEFAULT_SEPARATOR)
-            append("Rating")
-            append(DEFAULT_SEPARATOR)
-            append("Is Remix")
-        }
+    private fun addLine(writer: Writer, values: List<String>) {
+        var firstItem = true
 
-        Timber.e(line)
+        if (separator == null)
+            separator = DEFAULT_SEPARATOR
 
-        writer?.write(line)
-    }
+        val lines = StringBuilder()
 
-    @Throws(IOException::class)
-    private fun addRows(songs: ArrayList<Song>) {
-        songs.forEach {
-            val lines = buildString {
-                append(it.title)
-                append(DEFAULT_SEPARATOR)
-                append(it.artist)
-                append(DEFAULT_SEPARATOR)
-                append(it.releaseYear.toString())
-                append(DEFAULT_SEPARATOR)
-                append(it.rating.toString())
-                append(DEFAULT_SEPARATOR)
-                append(it.isRemix.toString())
+        for (value in values) {
+            if (!firstItem) {
+                lines.append(separator)
             }
 
-            Timber.e(lines)
+            lines.append(value)
 
-            writer?.write(lines)
+            firstItem = false
         }
+
+        lines.append("\n")
+
+        Timber.e(lines.toString())
+        writer.append(lines.toString())
     }
 
     companion object {
         const val DEFAULT_SEPARATOR = ","
-        private val SAMPLE_DATA = arrayListOf(
+        private val SAMPLE_DATA = listOf(
             Song("What To Do", "&Me", 2009, 9.8F, true),
             Song("Webaba", "Culoe De Song", 2016, 9.0F, false),
             Song("Lavendar Boogie", "Tampa", 2019, 8.8F, false),

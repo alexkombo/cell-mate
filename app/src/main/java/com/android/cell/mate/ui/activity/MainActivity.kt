@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun writeCSV(){
-        CSVWriter(this).createCSV()
+        CSVWriter(this, DEFAULT_SEPARATOR).createCSV()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
