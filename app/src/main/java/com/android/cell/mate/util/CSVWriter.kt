@@ -1,8 +1,6 @@
 package com.android.cell.mate.util
 
 import android.content.Context
-import android.os.Environment
-import androidx.core.content.ContextCompat
 import com.android.cell.mate.ui.model.Song
 import timber.log.Timber
 import java.io.File
@@ -18,8 +16,8 @@ class CSVWriter(private val context: Context, private var separator: String?) {
     private var fileWriter: FileWriter? = null
 
     fun createCSV() {
-        val fileRoot = ContextCompat.getExternalFilesDirs(context, Environment.DIRECTORY_DOWNLOADS)
-        val file = File(fileRoot[1].absolutePath, "songs.csv")
+        val fileRoot = context.filesDir
+        val file = File(fileRoot.absolutePath, "songs.csv")
 
         try {
             fileWriter = FileWriter(file)
