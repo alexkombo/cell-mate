@@ -14,6 +14,10 @@ import org.greenrobot.eventbus.EventBus
 /**
  * Created by kombo on 2019-09-12.
  */
+
+/**
+ * Dialog to allow user to enter separator
+ */
 class PromptDialog: BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

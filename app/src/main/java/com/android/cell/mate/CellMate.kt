@@ -11,6 +11,7 @@ class CellMate: Application() {
     override fun onCreate() {
         super.onCreate()
 
+        //init logger
         Timber.uprootAll()
         Timber.plant(Timber.DebugTree())
     }

@@ -5,6 +5,6 @@ package com.android.cell.mate.event
  */
 
 /**
- * Hold error message to be shown to user
+ * informs the user of the path of created CSV
  */
-class ErrorEvent(val message: String)
+class WriteEvent(val message: String)

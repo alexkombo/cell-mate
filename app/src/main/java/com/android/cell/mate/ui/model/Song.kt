@@ -5,6 +5,10 @@ import org.jetbrains.annotations.NotNull
 /**
  * Created by kombo on 2019-09-12.
  */
+
+/**
+ * Sample POJO to be written to CSV
+ */
 data class Song(
 
     @NotNull
