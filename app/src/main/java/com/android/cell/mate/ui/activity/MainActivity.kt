@@ -4,11 +4,15 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
+import android.widget.TableRow
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.android.cell.mate.R
 import com.android.cell.mate.event.ErrorEvent
 import com.android.cell.mate.event.InputEvent
 import com.android.cell.mate.ui.dialog.PromptDialog
+import com.android.cell.mate.util.CSVReader
 import com.android.cell.mate.util.CSVWriter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
@@ -16,6 +20,8 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,7 +32,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        uploadCSV.setOnClickListener { loadCSV() }
+        uploadCSV.setOnClickListener {
+            tableLayout.removeAllViews()
+            loadCSV()
+        }
         writeCSV.setOnClickListener { writeCSV() }
     }
 
@@ -42,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun writeCSV(){
+    private fun writeCSV() {
         CSVWriter(this, DEFAULT_SEPARATOR).createCSV()
     }
 
@@ -58,26 +67,79 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requestSeparator(){
-        supportFragmentManager.beginTransaction().add(PromptDialog(), "PromptDialog").commitAllowingStateLoss()
+    private fun requestSeparator() {
+        supportFragmentManager.beginTransaction().add(PromptDialog(), "PromptDialog")
+            .commitAllowingStateLoss()
     }
 
     private fun getDocument(uri: Uri) {
+        try {
+            val reader = CSVReader(this, separator!!)
+            val items = reader.readCSV(uri)
 
-//        try {
-//            val reader = CSVReader(this, ",")
-//            val items = reader.readCSV(uri)
-//
-//            val string = StringBuilder()
-//            items.forEach {
-//                string.append(it)
-//                string.append("\n")
-//            }
-//
-////            sample.text = string
-//        } catch (nf: FileNotFoundException) {
-//            Timber.e(nf)
-//        }
+            showRows(items)
+        } catch (nf: FileNotFoundException) {
+            nf.localizedMessage?.let {
+                showSnackbar(it)
+            }
+        } catch (e: Exception) {
+            e.localizedMessage?.let {
+                showSnackbar(it)
+            }
+        } catch (io: IOException) {
+            io.localizedMessage?.let {
+                showSnackbar(it)
+            }
+        }
+    }
+
+    @Throws(Exception::class)
+    private fun showRows(results: ArrayList<Map<String, ArrayList<String>>>) {
+        val keys = ArrayList<String>()
+        results.forEach {
+            keys.add(it.keys.first())
+        }
+
+        addHeaderRow(keys)
+
+        val data = ArrayList<ArrayList<String>>()
+        results.forEachIndexed { index, map -> data.add(map[keys[index]] ?: error("")) }
+        addDataRows(keys.size, data)
+    }
+
+    private fun addHeaderRow(names: ArrayList<String>) {
+        val headerRow = TableRow(this)
+        headerRow.gravity = Gravity.START
+
+        names.forEach {
+            val textView = TextView(this)
+            textView.setTextAppearance(R.style.headerStyle)
+            textView.text = it
+
+            headerRow.addView(textView)
+        }
+
+        tableLayout.addView(headerRow)
+    }
+
+    private fun addDataRows(numOfColumns: Int, content: ArrayList<ArrayList<String>>) {
+        Timber.e(content.size.toString())
+
+        val size = content[0].size
+
+        for (i in 0 until size) {
+            val dataRow = TableRow(this)
+            dataRow.gravity = Gravity.START
+
+            for (j in 0 until numOfColumns) {
+                val textView = TextView(this)
+                textView.text = content[j][i]
+
+                dataRow.addView(textView)
+            }
+
+            tableLayout.addView(dataRow)
+        }
     }
 
     override fun onStart() {
@@ -91,19 +153,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onErrorEvent(errorEvent: ErrorEvent){
-        val snackbar = Snackbar.make(parentLayout, errorEvent.message, Snackbar.LENGTH_INDEFINITE)
+    fun onErrorEvent(errorEvent: ErrorEvent) {
+        showSnackbar(errorEvent.message)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onInputEvent(inputEvent: InputEvent) {
+        separator = inputEvent.input ?: DEFAULT_SEPARATOR
+
+        csvUri?.let {
+            getDocument(it)
+        }
+    }
+
+    private fun showSnackbar(message: String) {
+        val snackbar = Snackbar.make(parentLayout, message, Snackbar.LENGTH_INDEFINITE)
         snackbar.setAction(R.string.dismiss) {
             snackbar.dismiss()
         }
         snackbar.show()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onInputEvent(inputEvent: InputEvent){
-        separator = inputEvent.input ?: DEFAULT_SEPARATOR
-
-        Timber.e(separator)
     }
 
     companion object {

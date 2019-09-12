@@ -65,7 +65,6 @@ class CSVWriter(private val context: Context, private var separator: String?) {
 
         lines.append("\n")
 
-        Timber.e(lines.toString())
         writer.append(lines.toString())
     }
 

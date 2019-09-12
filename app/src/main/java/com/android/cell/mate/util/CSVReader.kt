@@ -2,53 +2,53 @@ package com.android.cell.mate.util
 
 import android.content.Context
 import android.net.Uri
-import timber.log.Timber
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileNotFoundException
 import java.io.InputStreamReader
+import java.util.stream.Collectors
 
 /**
  * Created by kombo on 2019-09-11.
  */
 class CSVReader(private val context: Context, private val delimiter: String) {
 
-    fun readCSV(uri: Uri): ArrayList<String> {
-        var lines = ArrayList<String>()
+    private var contentMaps: ArrayList<Map<String, ArrayList<String>>>? = null
+    private var headerNames: ArrayList<String>? = null
 
-//        if (isFileAvailable(path)) {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val inputStreamReader = InputStreamReader(inputStream)
-            val bufferedReader = BufferedReader(inputStreamReader)
+    fun readCSV(uri: Uri): ArrayList<Map<String, ArrayList<String>>> {
 
-//        bufferedReader.useLines { l ->
-//            l.forEach { Timber.e(it) }
-//        }
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val inputStreamReader = InputStreamReader(inputStream!!)
+        val bufferedReader = BufferedReader(inputStreamReader)
 
-            bufferedReader.forEachLine { line ->
+        val list = bufferedReader.lines().limit(1).collect(Collectors.toList())
+        contentMaps = getHeaders(list.first())
+
+        bufferedReader.useLines { lines ->
+            lines.forEach { line ->
                 val cellItems =
                     line.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-                val stringBuilder = StringBuilder()
-
-                for (i in cellItems)
-                    stringBuilder.append(i).append(" ")
-
-                Timber.e(stringBuilder.toString())
-
-                lines.add(stringBuilder.toString())
+                for ((index, value) in cellItems.withIndex()) {
+                    contentMaps!![index][headerNames!![index]]?.add(value)
+                }
             }
-//        } else {
-//            Timber.e("File not found")
-//        }
+        }
 
-        return lines
+        return contentMaps!!
     }
 
-    @Throws(FileNotFoundException::class)
-    private fun isFileAvailable(path: String): Boolean {
-        val file = File(path)
+    private fun getHeaders(headerStream: String): ArrayList<Map<String, ArrayList<String>>> {
+        val headers =
+            headerStream.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        return file.isFile
+        headerNames = ArrayList()
+        val items = ArrayList<Map<String, ArrayList<String>>>()
+
+        for (header in headers) {
+            headerNames!!.add(header)
+            items.add(mapOf(header to ArrayList()))
+        }
+
+        return items
     }
 }
