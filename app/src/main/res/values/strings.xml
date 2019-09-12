@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Cell Mate</string>
+    <string name="upload_csv">Upload CSV</string>
 </resources>
