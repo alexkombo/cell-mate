@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Cell Mate</string>
     <string name="upload_csv">Upload CSV</string>
+    <string name="enter_separator">Enter Separator</string>
+    <string name="done">Done</string>
+    <string name="please_enter_separator">Please enter separator to proceed</string>
+    <string name="dismiss">Dismiss</string>
 </resources>
