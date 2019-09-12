@@ -1,6 +1,7 @@
 package com.android.cell.mate.util
 
 import android.content.Context
+import android.net.Uri
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.File
@@ -12,31 +13,34 @@ import java.io.InputStreamReader
  */
 class CSVReader(private val context: Context, private val delimiter: String) {
 
-    fun readCSV(path: String): ArrayList<String> {
+    fun readCSV(uri: Uri): ArrayList<String> {
         var lines = ArrayList<String>()
 
 //        if (isFileAvailable(path)) {
-        val inputStream = context.assets.open(path)
-        val inputStreamReader = InputStreamReader(inputStream)
-        val bufferedReader = BufferedReader(inputStreamReader)
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val inputStreamReader = InputStreamReader(inputStream)
+            val bufferedReader = BufferedReader(inputStreamReader)
 
 //        bufferedReader.useLines { l ->
 //            l.forEach { Timber.e(it) }
 //        }
 
-        bufferedReader.forEachLine { line ->
-            val cellItems =
-                line.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            bufferedReader.forEachLine { line ->
+                val cellItems =
+                    line.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-            val stringBuilder = StringBuilder()
+                val stringBuilder = StringBuilder()
 
-            for(i in cellItems)
-                stringBuilder.append(i).append(" ")
+                for (i in cellItems)
+                    stringBuilder.append(i).append(" ")
 
-            Timber.e(stringBuilder.toString())
+                Timber.e(stringBuilder.toString())
 
-            lines.add(stringBuilder.toString())
-        }
+                lines.add(stringBuilder.toString())
+            }
+//        } else {
+//            Timber.e("File not found")
+//        }
 
         return lines
     }

@@ -18,21 +18,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         uploadCSV.setOnClickListener { loadCSV() }
-
-        try {
-            val reader = CSVReader(this, ",")
-            val items = reader.readCSV("samples/movies.csv")
-
-            val string = StringBuilder()
-            items.forEach {
-                string.append(it)
-                string.append("\n")
-            }
-
-//            sample.text = string
-        } catch (nf: FileNotFoundException) {
-            Timber.e(nf)
-        }
     }
 
     private fun loadCSV() {
@@ -56,7 +41,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getDocument(uri: Uri){
-        Timber.e("Here")
+        try {
+            val reader = CSVReader(this, ",")
+            val items = reader.readCSV(uri)
+
+            val string = StringBuilder()
+            items.forEach {
+                string.append(it)
+                string.append("\n")
+            }
+
+//            sample.text = string
+        } catch (nf: FileNotFoundException) {
+            Timber.e(nf)
+        }
     }
 
     companion object {
