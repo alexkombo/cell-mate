@@ -9,6 +9,7 @@ import com.android.cell.mate.R
 import com.android.cell.mate.event.ErrorEvent
 import com.android.cell.mate.event.InputEvent
 import com.android.cell.mate.ui.dialog.PromptDialog
+import com.android.cell.mate.util.CSVWriter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         uploadCSV.setOnClickListener { loadCSV() }
+        writeCSV.setOnClickListener { writeCSV() }
     }
 
     private fun loadCSV() {
@@ -38,6 +40,10 @@ class MainActivity : AppCompatActivity() {
             intent,
             READ_REQUEST_CODE
         )
+    }
+
+    private fun writeCSV(){
+        CSVWriter(this).createCSV()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
